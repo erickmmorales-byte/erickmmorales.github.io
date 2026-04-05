@@ -1,0 +1,1497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Journal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <noscript>
+    <style>.post__body { max-height: none !important; overflow: visible !important; }</style>
+  </noscript>
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --color-bg:           #fafafa;
+      --color-text:         #1a1a1a;
+      --color-muted:        #888;
+      --color-line:         #ddd;
+      --color-dot:          #1a1a1a;
+      --color-card-bg:      #fff;
+      --color-card-border:  #e8e8e8;
+      --color-panel-bg:     #fff;
+
+      --font-mono:  'Space Mono', 'Courier New', monospace;
+
+      --dot-size:    12px;
+      --card-gap:    3rem;
+      --card-width:  calc(50% - 2rem);
+      --panel-width: 260px;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background: var(--color-bg);
+      color: var(--color-text);
+      font-family: var(--font-mono);
+      line-height: 1.7;
+      overflow-x: hidden;
+      transition: background 0.25s ease, color 0.25s ease;
+    }
+
+    /* ── Dark mode ───────────────────────────────────────── */
+    body.dark-mode {
+      --color-bg:           #111;
+      --color-text:         #e0e0e0;
+      --color-muted:        #666;
+      --color-line:         #2a2a2a;
+      --color-dot:          #e0e0e0;
+      --color-card-bg:      #1a1a1a;
+      --color-card-border:  #2d2d2d;
+      --color-panel-bg:     #1a1a1a;
+    }
+
+    body.dark-mode .post-modal__body p { color: #ccc; }
+
+    body.dark-mode .img-lightbox__image-panel { background: #222; }
+
+    /* ── Dark mode toggle button ─────────────────────────── */
+    .dark-toggle {
+      position: fixed;
+      top: 1.25rem;
+      right: 1.25rem;
+      z-index: 300;
+      background: var(--color-text);
+      color: var(--color-bg);
+      border: none;
+      padding: 0.3rem 0.65rem;
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.12em;
+      cursor: pointer;
+      border-radius: 2px;
+      transition: background 0.25s ease, color 0.25s ease;
+    }
+
+    .dark-toggle:focus-visible {
+      outline: 2px solid var(--color-dot);
+      outline-offset: 2px;
+    }
+
+    /* ── Menu toggle button ──────────────────────────────── */
+    .menu-toggle {
+      position: fixed;
+      top: 1.25rem;
+      left: 1.25rem;
+      z-index: 300;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      border-radius: 3px;
+      transition: opacity 0.15s ease;
+    }
+
+    .menu-toggle:hover { opacity: 0.6; }
+
+    .menu-toggle:focus-visible {
+      outline: 2px solid var(--color-dot);
+      outline-offset: 2px;
+    }
+
+    .menu-toggle__bar {
+      display: block;
+      width: 22px;
+      height: 1.5px;
+      background: var(--color-text);
+      border-radius: 1px;
+      transition: transform 0.25s ease, opacity 0.25s ease;
+      transform-origin: center;
+    }
+
+    /* Animate bars into an X when panel is open */
+    body.panel-open .menu-toggle__bar:nth-child(1) {
+      transform: translateY(6.5px) rotate(45deg);
+    }
+    body.panel-open .menu-toggle__bar:nth-child(2) {
+      opacity: 0;
+    }
+    body.panel-open .menu-toggle__bar:nth-child(3) {
+      transform: translateY(-6.5px) rotate(-45deg);
+    }
+
+    /* ── Side panel ──────────────────────────────────────── */
+    .side-panel {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: var(--panel-width);
+      height: 100%;
+      background: var(--color-panel-bg);
+      border-right: 1px solid var(--color-line);
+      z-index: 200;
+      transform: translateX(-100%);
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      flex-direction: column;
+      padding: 4rem 0 2rem;
+      overflow-y: auto;
+    }
+
+    body.panel-open .side-panel {
+      transform: translateX(0);
+    }
+
+    .side-panel__label {
+      font-size: 0.7rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--color-muted);
+      padding: 0 1.5rem 0.75rem;
+    }
+
+    .side-panel__nav {
+      list-style: none;
+    }
+
+    .side-panel__nav li a {
+      display: block;
+      padding: 0.6rem 1.5rem;
+      font-size: 0.95rem;
+      color: var(--color-text);
+      text-decoration: none;
+      border-left: 2px solid transparent;
+      transition: border-color 0.15s ease, color 0.15s ease;
+      cursor: pointer;
+    }
+
+    .side-panel__nav li a:hover {
+      color: var(--color-muted);
+    }
+
+    .side-panel__nav li a.is-active {
+      border-left-color: var(--color-dot);
+      font-weight: 500;
+    }
+
+    /* ── Backdrop ────────────────────────────────────────── */
+    .backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.18);
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    body.panel-open .backdrop {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* ── Header ─────────────────────────────────────────── */
+    .site-header {
+      text-align: center;
+      padding: 5rem 1.5rem 4rem;
+      border-bottom: 1px solid var(--color-line);
+      margin-bottom: 4rem;
+    }
+
+    .site-title {
+      font-family: var(--font-mono);
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      font-weight: normal;
+      letter-spacing: -0.02em;
+    }
+
+    .site-subtitle {
+      color: var(--color-muted);
+      margin-top: 0.6rem;
+      font-size: 1rem;
+    }
+
+    /* ── Pages ───────────────────────────────────────────── */
+    .page { display: none; }
+    .page.is-active { display: block; }
+
+    /* ── Timeline container ──────────────────────────────── */
+    .timeline {
+      position: relative;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 1.5rem calc(var(--card-gap) * 2);
+    }
+
+    /* The vertical line */
+    .timeline::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      width: 1px;
+      background: var(--color-line);
+      transform: translateX(-50%);
+    }
+
+    /* ── Post article ────────────────────────────────────── */
+    .post {
+      position: relative;
+      display: flex;
+      margin-bottom: var(--card-gap);
+    }
+
+    .post--left  { justify-content: flex-start; }
+    .post--right { justify-content: flex-end; }
+
+    /* ── Connector dot ───────────────────────────────────── */
+    .post__connector {
+      position: absolute;
+      top: 1.6rem;
+      left: calc(50% - var(--dot-size) / 2);
+      width: var(--dot-size);
+      height: var(--dot-size);
+      background: var(--color-dot);
+      border-radius: 50%;
+      border: 3px solid var(--color-bg);
+      z-index: 2;
+      transition: background 0.2s ease;
+    }
+
+    .post:hover .post__connector {
+      background: #555;
+    }
+
+    /* ── Card ────────────────────────────────────────────── */
+    .post__card {
+      position: relative;
+      width: var(--card-width);
+      background: var(--color-card-bg);
+      border: 1px solid var(--color-card-border);
+      border-radius: 3px;
+      padding: 1.5rem 1.75rem 1.25rem;
+      cursor: pointer;
+      transition: box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+
+    .post__card:hover {
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.07);
+      border-color: #ccc;
+    }
+
+    .post__card:focus-visible {
+      outline: 2px solid var(--color-dot);
+      outline-offset: 3px;
+    }
+
+    /* ── Card content ────────────────────────────────────── */
+    .post__date {
+      display: block;
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--color-muted);
+      margin-bottom: 0.5rem;
+    }
+
+    .post__title {
+      font-family: var(--font-mono);
+      font-size: 1.2rem;
+      font-weight: normal;
+      line-height: 1.35;
+      margin-bottom: 0.85rem;
+    }
+
+    .post__excerpt {
+      font-size: 0.92rem;
+      color: #555;
+      line-height: 1.65;
+      margin-bottom: 0.75rem;
+    }
+
+    /* ── Hidden body (content is shown in modal) ───────── */
+    .post__body {
+      display: none;
+    }
+
+    /* ── Read more hint ──────────────────────────────────── */
+    .post__toggle {
+      display: inline-block;
+      margin-top: 0.6rem;
+      background: none;
+      border: none;
+      padding: 0;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--color-muted);
+      cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      letter-spacing: 0.03em;
+      pointer-events: none;
+    }
+
+    /* ── Post modal overlay ──────────────────────────────── */
+    .post-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 500;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .post-modal.is-open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .post-modal__backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.35);
+    }
+
+    .post-modal__container {
+      position: absolute;
+      background: var(--color-card-bg);
+      border-radius: 4px;
+      overflow: hidden;
+      box-shadow: 0 12px 48px rgba(0, 0, 0, 0.15);
+    }
+
+    .post-modal__scroll {
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 3.5rem 2.5rem 4rem;
+    }
+
+    .post-modal__close {
+      position: absolute;
+      top: 1rem;
+      right: 1.25rem;
+      z-index: 1;
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      line-height: 1;
+      color: var(--color-muted);
+      cursor: pointer;
+      padding: 0.25rem 0.5rem;
+      border-radius: 3px;
+      transition: color 0.15s ease;
+    }
+
+    .post-modal__close:hover {
+      color: var(--color-text);
+    }
+
+    .post-modal__close:focus-visible {
+      outline: 2px solid var(--color-dot);
+      outline-offset: 2px;
+    }
+
+    .post-modal__date {
+      display: block;
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--color-muted);
+      margin-bottom: 0.6rem;
+    }
+
+    .post-modal__title {
+      font-family: var(--font-mono);
+      font-size: clamp(1.4rem, 3vw, 1.8rem);
+      font-weight: normal;
+      line-height: 1.35;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--color-line);
+    }
+
+    /* ── Modal body ──────────────────────────────────────── */
+    .post-modal__body {
+      display: flow-root; /* contain floats */
+    }
+
+    .post-modal__body p {
+      font-size: 1rem;
+      line-height: 1.8;
+      color: #333;
+      margin-bottom: 1.25rem;
+    }
+
+    .post-modal__body p:last-child { margin-bottom: 0; }
+
+    /* Inline floating images */
+    .post-img--left {
+      float: left;
+      width: 45%;
+      margin: 0.25rem 1.25rem 0.75rem 0;
+      cursor: zoom-in;
+    }
+
+    .post-img--right {
+      float: right;
+      width: 45%;
+      margin: 0.25rem 0 0.75rem 1.25rem;
+      cursor: zoom-in;
+    }
+
+    .post-img img {
+      display: block;
+      width: 100%;
+      height: auto;
+      border-radius: 3px;
+      transition: opacity 0.15s ease;
+      margin: 0;
+    }
+
+    .post-img:hover img { opacity: 0.82; }
+
+    /* ── Image lightbox ──────────────────────────────────── */
+    .img-lightbox {
+      position: fixed;
+      inset: 0;
+      z-index: 600;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .img-lightbox.is-open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .img-lightbox__backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+    }
+
+    .img-lightbox__container {
+      position: absolute;
+      background: var(--color-card-bg);
+      border-radius: 4px;
+      overflow: hidden;
+      box-shadow: 0 12px 48px rgba(0, 0, 0, 0.25);
+    }
+
+    .img-lightbox__close {
+      position: absolute;
+      top: 1rem;
+      right: 1.25rem;
+      z-index: 10;
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      line-height: 1;
+      color: var(--color-muted);
+      cursor: pointer;
+      padding: 0.25rem 0.5rem;
+      border-radius: 3px;
+      transition: color 0.15s ease;
+    }
+
+    .img-lightbox__close:hover { color: var(--color-text); }
+
+    .img-lightbox__close:focus-visible {
+      outline: 2px solid var(--color-dot);
+      outline-offset: 2px;
+    }
+
+    /* Layout wrapper */
+    .img-lightbox__layout {
+      display: flex;
+      flex-direction: row;
+      width: 100%;
+      height: 100%;
+    }
+
+    .img-lightbox__layout--center { flex-direction: column; }
+
+    /* Left image → image on LEFT (order 1), caption on RIGHT (order 2) */
+    .img-lightbox__layout--left .img-lightbox__image-panel   { order: 1; }
+    .img-lightbox__layout--left .img-lightbox__caption-panel { order: 2; }
+
+    /* Right image → caption on LEFT (order 1), image on RIGHT (order 2) */
+    .img-lightbox__layout--right .img-lightbox__caption-panel { order: 1; }
+    .img-lightbox__layout--right .img-lightbox__image-panel   { order: 2; }
+
+    .img-lightbox__caption-panel {
+      width: 180px;
+      flex-shrink: 0;
+      padding: 3.5rem 1.25rem 2rem;
+      border-left: 1px solid var(--color-line);
+      display: flex;
+      align-items: flex-end;
+    }
+
+    /* Right layout: caption panel is on the left, border on right */
+    .img-lightbox__layout--right .img-lightbox__caption-panel {
+      border-left: none;
+      border-right: 1px solid var(--color-line);
+    }
+
+    .img-lightbox__layout--center .img-lightbox__caption-panel {
+      width: 100%;
+      border-right: none;
+      border-top: 1px solid var(--color-line);
+      padding: 0.85rem 1.5rem;
+      align-items: center;
+    }
+
+    .img-lightbox__caption {
+      font-size: 0.78rem;
+      color: var(--color-muted);
+      line-height: 1.55;
+    }
+
+    .img-lightbox__image-panel {
+      flex: 1;
+      min-width: 0;
+      min-height: 0;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f2f2f2;
+    }
+
+    .img-lightbox__img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    @media (max-width: 700px) {
+      .post-modal__scroll {
+        padding: 2.5rem 1.25rem 3rem;
+      }
+
+      .post-img--left,
+      .post-img--right {
+        float: none;
+        width: 100%;
+        margin: 0 0 1rem 0;
+      }
+
+      .img-lightbox__layout--left,
+      .img-lightbox__layout--right {
+        flex-direction: column;
+      }
+
+      .img-lightbox__layout--left .img-lightbox__caption-panel,
+      .img-lightbox__layout--right .img-lightbox__caption-panel {
+        order: 2;
+        width: 100%;
+        border-left: none;
+        border-right: none;
+        border-top: 1px solid var(--color-line);
+        padding: 0.85rem 1.25rem;
+      }
+
+      .img-lightbox__layout--left .img-lightbox__image-panel,
+      .img-lightbox__layout--right .img-lightbox__image-panel {
+        order: 1;
+      }
+    }
+
+    /* ── About page ──────────────────────────────────────── */
+    .about {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 0 1.5rem 6rem;
+    }
+
+    .about__section {
+      margin-bottom: 3rem;
+    }
+
+    .about__section-title {
+      font-size: 0.7rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--color-muted);
+      margin-bottom: 1rem;
+      padding-bottom: 0.6rem;
+      border-bottom: 1px solid var(--color-line);
+    }
+
+    .about__bio {
+      font-size: 0.95rem;
+      color: #444;
+      line-height: 1.75;
+    }
+
+    .about__bio p + p {
+      margin-top: 1rem;
+    }
+
+    .about__contact-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .about__contact-list li {
+      font-size: 0.9rem;
+      color: #444;
+    }
+
+    .about__contact-list a {
+      color: var(--color-text);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .about__contact-list a:hover {
+      color: var(--color-muted);
+    }
+
+    /* ── Contact form ────────────────────────────────────── */
+    .contact-form {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .form-field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .form-field label {
+      font-size: 0.75rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--color-muted);
+    }
+
+    .form-field input,
+    .form-field textarea {
+      font-family: var(--font-mono);
+      font-size: 0.92rem;
+      color: var(--color-text);
+      background: var(--color-card-bg);
+      border: 1px solid var(--color-card-border);
+      border-radius: 3px;
+      padding: 0.65rem 0.85rem;
+      transition: border-color 0.15s ease;
+      resize: vertical;
+    }
+
+    .form-field input:focus,
+    .form-field textarea:focus {
+      outline: none;
+      border-color: #aaa;
+    }
+
+    .form-field textarea {
+      min-height: 120px;
+    }
+
+    .form-submit {
+      align-self: flex-start;
+      background: var(--color-text);
+      color: var(--color-bg);
+      border: none;
+      border-radius: 3px;
+      padding: 0.65rem 1.5rem;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      transition: opacity 0.15s ease;
+    }
+
+    .form-submit:hover { opacity: 0.75; }
+
+    .form-submit:focus-visible {
+      outline: 2px solid var(--color-dot);
+      outline-offset: 2px;
+    }
+
+    /* ── Conversation / Comments ─────────────────────────── */
+    .conversation {
+      margin-top: 3rem;
+      border-top: 1px solid var(--color-line);
+      padding-top: 1.5rem;
+    }
+
+    .conversation__toggle {
+      background: none;
+      border: none;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--color-muted);
+      cursor: pointer;
+      padding: 0;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .conversation__toggle:hover { color: var(--color-text); }
+
+    .conversation__body {
+      display: none;
+      margin-top: 1.5rem;
+    }
+
+    .conversation__body.is-open { display: block; }
+
+    .conversation__form {
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .conversation__form-row {
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    .conversation__form-row .form-field { flex: 1; }
+
+    .conversation__empty {
+      font-size: 0.88rem;
+      color: var(--color-muted);
+      font-style: italic;
+      margin-bottom: 0;
+    }
+
+    .conversation__comments {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .conversation__comment {
+      border-left: 2px solid var(--color-line);
+      padding-left: 1rem;
+    }
+
+    .conversation__comment-meta {
+      font-size: 0.72rem;
+      color: var(--color-muted);
+      letter-spacing: 0.06em;
+      margin-bottom: 0.3rem;
+    }
+
+    .conversation__comment-text {
+      font-size: 0.92rem;
+      line-height: 1.65;
+      margin-bottom: 0;
+    }
+
+    /* ── Footer ──────────────────────────────────────────── */
+    .site-footer {
+      text-align: center;
+      padding: 3rem 1.5rem;
+      border-top: 1px solid var(--color-line);
+      color: var(--color-muted);
+      font-size: 0.85rem;
+      margin-top: 2rem;
+    }
+
+    /* ── Responsive: single column ───────────────────────── */
+    @media (max-width: 640px) {
+      .timeline::before {
+        left: 18px;
+        transform: none;
+      }
+
+      .post,
+      .post--left,
+      .post--right {
+        justify-content: flex-end;
+      }
+
+      .post__card {
+        width: calc(100% - 42px);
+        margin-left: 42px;
+      }
+
+      .post__connector {
+        left: calc(18px - var(--dot-size) / 2);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Dark mode toggle -->
+  <button class="dark-toggle" aria-label="Toggle dark mode">DARK</button>
+
+  <!-- Hamburger button -->
+  <button class="menu-toggle" aria-label="Toggle navigation" aria-expanded="false" aria-controls="side-panel">
+    <span class="menu-toggle__bar"></span>
+    <span class="menu-toggle__bar"></span>
+    <span class="menu-toggle__bar"></span>
+  </button>
+
+  <!-- Side panel -->
+  <nav id="side-panel" class="side-panel" aria-label="Site navigation" aria-hidden="true">
+    <p class="side-panel__label">Navigation</p>
+    <ul class="side-panel__nav">
+      <li><a href="#" class="is-active" data-page="posts">Posts</a></li>
+      <li><a href="#" data-page="about">About</a></li>
+    </ul>
+  </nav>
+
+  <!-- Backdrop -->
+  <div class="backdrop" aria-hidden="true"></div>
+
+  <!-- Posts page -->
+  <div id="page-posts" class="page is-active">
+    <header class="site-header">
+      <h1 class="site-title">Your Best Friend</h1>
+      <p class="site-subtitle">Notes on things that matter</p>
+    </header>
+
+    <main class="timeline">
+
+    <!-- Post 1 — left -->
+    <article class="post post--left" aria-expanded="false">
+      <div class="post__connector"></div>
+      <div class="post__card" tabindex="0" role="button" aria-label="The Quiet Discipline of Doing Less">
+        <header class="post__header">
+          <time class="post__date" datetime="2025-11-14">November 14, 2025</time>
+          <h2 class="post__title">The Quiet Discipline of Doing Less</h2>
+        </header>
+        <p class="post__excerpt">There is a particular kind of productivity that looks like laziness from the outside. It is the productivity of the person who declines the meeting, skips the framework, and writes the plain text file.</p>
+        <div class="post__body" aria-hidden="true">
+          <div class="post__body-inner">
+            <p>Constraints, it turns out, are not enemies of good work. They are its precondition. When you have too many tools, you spend your energy choosing between them. When you have too many commitments, you spend your energy managing the guilt of not honoring them. The person who does less, carefully chosen, often produces more of lasting value.</p>
+            <p>I spent years chasing the perfect setup — the right note-taking app, the right task manager, the right morning routine. Each optimization promised clarity and delivered complexity. It was only when I stripped everything back to a single text file and a quiet hour in the morning that I finally felt like I was working rather than performing work.</p>
+            <p>Doing less is not about lowering your standards. It is about applying your full attention to fewer things so that your standards can actually be met. A short list of things you will genuinely do beats a long list of things you intended to do. The discipline is in the choosing, not the doing.</p>
+          </div>
+        </div>
+        <button class="post__toggle" aria-label="Read more about The Quiet Discipline of Doing Less">Read more</button>
+      </div>
+    </article>
+
+    <!-- Post 2 — right -->
+    <article class="post post--right" aria-expanded="false">
+      <div class="post__connector"></div>
+      <div class="post__card" tabindex="0" role="button" aria-label="What Soil Teaches You About Patience">
+        <header class="post__header">
+          <time class="post__date" datetime="2025-08-03">August 3, 2025</time>
+          <h2 class="post__title">What Soil Teaches You About Patience</h2>
+        </header>
+        <p class="post__excerpt">I started growing tomatoes this year, mostly because I was tired of buying them. What I didn't expect was that a raised bed would become the most reliable teacher I've had in years. The soil doesn't care about your schedule.</p>
+        <div class="post__body" aria-hidden="true">
+          <div class="post__body-inner">
+            <p>Everything about gardening runs counter to the rhythms of modern work. You cannot ship faster by pushing harder. You cannot A/B test your way to a better fruit. You wait, you observe, and you adjust based on what you actually see rather than what you expected. It is profoundly unfamiliar and, once you settle into it, deeply satisfying.</p>
+            <p>There is a concept in permaculture called "slow solutions" — the idea that systems which emerge gradually tend to be more resilient than those installed quickly. A fruit tree planted this year will outlive a hundred planning documents. The patience required to tend it is not a concession to limitation; it is an investment in time horizons that actually matter.</p>
+            <p>I am not a patient person by nature. Gardening hasn't made me one. But it has given me a place each morning where impatience is simply irrelevant, and that is something I didn't know I was missing.</p>
+          </div>
+        </div>
+        <button class="post__toggle" aria-label="Read more about What Soil Teaches You About Patience">Read more</button>
+      </div>
+    </article>
+
+    <!-- Post 3 — left -->
+    <article class="post post--left" aria-expanded="false">
+      <div class="post__connector"></div>
+      <div class="post__card" tabindex="0" role="button" aria-label="On Rereading Books You Hated in School">
+        <header class="post__header">
+          <time class="post__date" datetime="2025-04-22">April 22, 2025</time>
+          <h2 class="post__title">On Rereading Books You Hated in School</h2>
+        </header>
+        <p class="post__excerpt">I hated <em>The Great Gatsby</em> at seventeen. The characters seemed vapid, the symbolism felt forced, and the ending made me angry in a way I couldn't articulate. I picked it up again last month and couldn't put it down.</p>
+        <div class="post__body" aria-hidden="true">
+          <div class="post__body-inner">
+            <p>The book hadn't changed, of course. But I had accumulated enough failed ambition, enough parties attended out of obligation, enough green-light-across-the-water yearning, to finally understand what Fitzgerald was pointing at. The book is about the lies we tell ourselves to keep going, and at seventeen I simply hadn't told enough of them yet.</p>
+            <p>This is, I think, one of the strongest arguments for keeping a reading list that bends back on itself. Books read too early become fixed objects in memory — snapshots of your misunderstanding. Books reread become conversations, and the conversation changes as you change. You bring different questions; the text offers different answers.</p>
+            <p>I now keep a short list of books I was assigned in school that I plan to revisit one per year. So far: <em>Gatsby</em>, <em>Lord of the Flies</em>, and <em>Their Eyes Were Watching God</em>. Each has been more interesting the second time. I suspect the same will be true of the person reading them.</p>
+          </div>
+        </div>
+        <button class="post__toggle" aria-label="Read more about On Rereading Books You Hated in School">Read more</button>
+      </div>
+    </article>
+
+    <!-- Post 4 — right -->
+    <article class="post post--right" aria-expanded="false">
+      <div class="post__connector"></div>
+      <div class="post__card" tabindex="0" role="button" aria-label="The Case for Keeping a Paper Notebook">
+        <header class="post__header">
+          <time class="post__date" datetime="2025-01-09">January 9, 2025</time>
+          <h2 class="post__title">The Case for Keeping a Paper Notebook</h2>
+        </header>
+        <p class="post__excerpt">I have tried every digital note-taking system that has existed in the last decade. Some of them I used seriously for years. None of them have matched a cheap paper notebook for the one thing that matters: actually capturing a thought the moment it arrives.</p>
+        <div class="post__body" aria-hidden="true">
+          <div class="post__body-inner">
+            <p>The friction argument for paper is usually made wrong. People say that the resistance of writing by hand slows you down and makes you think more carefully. That is sometimes true, but it's not the main thing. The main thing is that a notebook has no other tabs. It cannot notify you. It does not suggest related content. It does not autosave to a cloud that requires a password reset. It is simply there, and so are you.</p>
+            <p>I use a small, unlined notebook and a ballpoint pen that cost less than a dollar. I carry it everywhere. I do not organize it. I do not tag or index. I occasionally flip back through old pages and am surprised by what I find — problems I had forgotten I solved, ideas I had forgotten I had, proof that I was thinking even on days I felt empty.</p>
+            <p>The notebook is not a productivity tool. It is a record that a mind was here, working on something. That turns out to be more valuable than any capture system.</p>
+          </div>
+        </div>
+        <button class="post__toggle" aria-label="Read more about The Case for Keeping a Paper Notebook">Read more</button>
+      </div>
+    </article>
+
+    <!-- Post 5 — left -->
+    <article class="post post--left" aria-expanded="false">
+      <div class="post__connector"></div>
+      <div class="post__card" tabindex="0" role="button" aria-label="Cities I Loved for the Wrong Reasons">
+        <header class="post__header">
+          <time class="post__date" datetime="2024-10-17">October 17, 2024</time>
+          <h2 class="post__title">Cities I Loved for the Wrong Reasons</h2>
+        </header>
+        <p class="post__excerpt">Lisbon was rainy every day I was there, and the hotel room smelled faintly of damp. I loved it. Porto was sunny and beautiful and I couldn't wait to leave. I've been trying to figure out what that means ever since.</p>
+        <div class="post__body" aria-hidden="true">
+          <div class="post__body-inner">
+            <p>A city is not a place; it is an encounter. What you find there is shaped by who you were when you arrived, who you were with, what you had just come from, and ten thousand accidents of weather and timing and the particular café that happened to be open. To love a city is to love a version of yourself that existed there briefly, which is why returning is always complicated.</p>
+            <p>I've been making a list of the cities I want to return to, trying to be honest about what I'm actually hoping to recover. Usually it isn't the city. It's a summer when I had no particular obligations, or a friendship that was easiest in motion, or the particular feeling of being in a place where no one expected anything of me yet.</p>
+            <p>The cities worth returning to, I've decided, are the ones that were better than I expected — which means the ones where I arrived wrong and was corrected. Those are the places that taught me something. The ones I romanticize are just mirrors.</p>
+          </div>
+        </div>
+        <button class="post__toggle" aria-label="Read more about Cities I Loved for the Wrong Reasons">Read more</button>
+      </div>
+    </article>
+
+    <!-- Post 6 — right -->
+    <article class="post post--right" aria-expanded="false">
+      <div class="post__connector"></div>
+      <div class="post__card" tabindex="0" role="button" aria-label="How I Stopped Optimizing My Morning">
+        <header class="post__header">
+          <time class="post__date" datetime="2024-07-05">July 5, 2024</time>
+          <h2 class="post__title">How I Stopped Optimizing My Morning</h2>
+        </header>
+        <p class="post__excerpt">For two years I followed a morning routine with military precision: wake at 5:30, cold shower, twenty minutes of journaling, thirty minutes of reading, then work. It was productive. It was also quietly miserable.</p>
+        <div class="post__body" aria-hidden="true">
+          <div class="post__body-inner">
+            <p>The problem with an optimized morning is that it treats the early hours as infrastructure — a system to boot up the machine before the real work begins. But a morning is also just a time of day. Sometimes it is worth sitting with a second cup of coffee doing nothing in particular. Sometimes the best thing that happens all day occurs in that unscheduled gap where you were supposed to be journaling.</p>
+            <p>I don't have a morning routine anymore. I wake up, I make coffee, and I do whatever seems right. Some mornings that means writing for two hours. Some mornings it means sitting outside for forty-five minutes watching nothing happen. The work still gets done. The days feel longer in the good sense — more spacious, less like a project plan.</p>
+            <p>The optimization literature wants you to believe that the right system will make the good days happen more reliably. I think it's closer to the opposite: the right amount of structure is just enough to keep the catastrophically bad days from happening, with as much open space as possible left over for everything else.</p>
+          </div>
+        </div>
+        <button class="post__toggle" aria-label="Read more about How I Stopped Optimizing My Morning">Read more</button>
+      </div>
+    </article>
+
+    <!-- Post 7 — left -->
+    <article class="post post--left" aria-expanded="false">
+      <div class="post__connector"></div>
+      <div class="post__card" tabindex="0" role="button" aria-label="Learning to Read a River">
+        <header class="post__header">
+          <time class="post__date" datetime="2024-03-18">March 18, 2024</time>
+          <h2 class="post__title">Learning to Read a River</h2>
+        </header>
+        <p class="post__excerpt">My grandfather could look at a river and tell you where the fish were, which rocks were safe to step on, and whether the water had risen in the last two days. I spent a week trying to learn what he knew, and I'm not sure I got more than a paragraph of it.</p>
+        <div class="post__body" aria-hidden="true">
+          <div class="post__body-inner">
+            <figure class="post-img post-img--left" data-caption="Morning light on the water, mid-April. The channel runs left of center here — he showed me that.">
+              <img src="https://picsum.photos/seed/river1/600/420" alt="A river at dawn with light filtering through trees">
+            </figure>
+            <p>He didn't call it a skill. He called it paying attention, which is something people say when they've done something so long that the skill has dissolved into instinct. The difference between a good teacher and a great one is whether they can reassemble the instinct back into steps, and my grandfather was a great man but not, it turned out, a great teacher. What he gave me instead was better: an example of what sustained attention to one thing looks like over a lifetime.</p>
+            <p>The river he took me to was the same one he'd been fishing since he was eleven. That's more than sixty years of a relationship with a single body of water. He knew where the channels shifted after the flood of '89. He knew the particular eddy behind the third boulder that always held trout in April but never in June. He knew the smell of the water before a storm, which he described as "sharper," though he couldn't say more than that, and I believed him entirely.</p>
+            <p>What struck me most was how little of it was transferable through language. He could point and say "there" and I could look there and see water. He was seeing something else — a composite of memory, pattern, and a kind of felt knowledge that lived in his body rather than his mind. The novelist Barry Lopez wrote about this once, about indigenous hunters who could read landscape the way we read text. The analogy is exact: it's a literacy, developed over years, in a language most of us never bother to learn.</p>
+            <p>I've been thinking about this in the context of expertise more broadly. We talk about knowledge as if it were primarily propositional — as if knowing something means being able to state it. But most of the knowledge that actually matters is embodied, contextual, and resistant to being written down. A doctor who has seen ten thousand patients knows something she cannot put in a textbook. A carpenter who has worked with wood for forty years has knowledge in his hands that no manual can capture. We undervalue this kind of knowing because we can't test it, cite it, or put it in a slide deck.</p>
+            <p>On the last morning, my grandfather waded into the water up to his knees and stood very still for a long time. Then he pointed at a spot about thirty feet upstream and said: "Cast just upstream of that rock and let it drift." I did. The line went tight almost immediately. He didn't say anything. He just watched and smiled, and I understood that what I had received was not a lesson but an inheritance, and that the only way to honor it was to keep coming back to the river.</p>
+          </div>
+        </div>
+        <button class="post__toggle" aria-label="Read more about Learning to Read a River">Read more</button>
+      </div>
+    </article>
+
+    <!-- Post 8 — right -->
+    <article class="post post--right" aria-expanded="false">
+      <div class="post__connector"></div>
+      <div class="post__card" tabindex="0" role="button" aria-label="The Year I Tried to Understand Money">
+        <header class="post__header">
+          <time class="post__date" datetime="2023-11-02">November 2, 2023</time>
+          <h2 class="post__title">The Year I Tried to Understand Money</h2>
+        </header>
+        <p class="post__excerpt">I spent most of my twenties being confused about money in a way I was too embarrassed to admit. It wasn't that I was reckless — I paid my bills, avoided debt, saved a little each month. It was that I had no idea what any of it actually meant or what I was supposed to be doing with it.</p>
+        <div class="post__body" aria-hidden="true">
+          <div class="post__body-inner">
+            <figure class="post-img post-img--right" data-caption="My reading pile from that year. Most of it was unassuming paperbacks, nothing flashy.">
+              <img src="https://picsum.photos/seed/books1/600/420" alt="A stack of books on a wooden desk">
+            </figure>
+            <p>The confusion, I've since learned, is almost universal and almost entirely manufactured. Personal finance is not complicated. The mathematics involved are sixth-grade arithmetic. What makes it seem complicated is a combination of jargon designed to make ordinary people feel like they need experts, an industry with strong financial incentives to keep things opaque, and a cultural taboo around talking about money that ensures nobody ever learns from anyone else's experience. We are, as a society, systematically kept confused about the thing that shapes more of our daily choices than almost anything else.</p>
+            <p>My education began, as many educations do, with a crisis. Not a dramatic one — not bankruptcy or debt collectors — just the quiet crisis of looking at my accounts at thirty-one and realizing I didn't know why they were the way they were, and more troublingly, didn't know what I'd have to change to make them different. I had been a passenger in my own financial life, vaguely aware that the vehicle was moving but with no understanding of where it was going.</p>
+            <p>I spent a year reading. Not the self-help books that promise to make you rich, but the ones that explain how the system actually works: index funds, tax-advantaged accounts, compound interest, asset allocation, the difference between a stock and a bond. None of it was hard. All of it had been available to me for years. The barrier wasn't intelligence or access — it was that nobody had ever told me I was supposed to learn it, and the culture of shame around financial ignorance had prevented me from asking.</p>
+            <p>The most important thing I learned was not a financial principle but a meta-lesson about knowledge itself: the things we most need to understand are often the things we feel most embarrassed to admit we don't. Money, sex, death, the political systems we live under — we absorb a fog of half-knowledge and taboo and never push through to clarity because the discomfort of not knowing seems preferable to the discomfort of admitting we don't know. This is backwards. The discomfort of not knowing is permanent; the discomfort of asking is brief.</p>
+            <p>What changed for me was not dramatic. I started putting the maximum allowed into my employer's retirement account. I moved my savings into index funds rather than letting them sit in a savings account earning nothing. I stopped buying things I didn't need to avoid dealing with the feelings that made me want to buy things. The effects were slow but compounding, in the literal sense: small changes that generate returns that generate further returns.</p>
+            <p>What I wish someone had told me at twenty-two: you don't need to be good at math, you don't need a financial advisor, and you don't need to think about money very much once you've set up the basic structures. The game is not complex. The goal is simply to stop being a passenger. You don't need to be the best driver in the world — you just need to be at the wheel.</p>
+          </div>
+        </div>
+        <button class="post__toggle" aria-label="Read more about The Year I Tried to Understand Money">Read more</button>
+      </div>
+    </article>
+
+    </main>
+
+    <footer class="site-footer">
+      <p>&copy; 2026 &nbsp;&middot;&nbsp; Written slowly, published when ready</p>
+    </footer>
+  </div><!-- /page-posts -->
+
+  <!-- About page -->
+  <div id="page-about" class="page">
+    <header class="site-header">
+      <h1 class="site-title">About</h1>
+    </header>
+
+    <div class="about">
+
+      <section class="about__section">
+        <h2 class="about__section-title">Bio</h2>
+        <div class="about__bio">
+          <p>Hi, I'm [Your Name]. I write about the things I find interesting — which tends to include books, slow mornings, gardening, and the gap between how we think we work and how we actually do.</p>
+          <p>This blog is a place for longer thoughts that don't fit anywhere else. I publish when something is ready, not on a schedule.</p>
+        </div>
+      </section>
+
+      <section class="about__section">
+        <h2 class="about__section-title">Contact</h2>
+        <ul class="about__contact-list">
+          <li>Email: <a href="mailto:you@example.com">you@example.com</a></li>
+          <li>Twitter / X: <a href="#">@yourhandle</a></li>
+          <li>GitHub: <a href="#">github.com/yourhandle</a></li>
+        </ul>
+      </section>
+
+      <section class="about__section">
+        <h2 class="about__section-title">Send a message</h2>
+        <form class="contact-form" id="contact-form">
+          <div class="form-field">
+            <label for="cf-name">Name</label>
+            <input type="text" id="cf-name" name="name" placeholder="Your name" required>
+          </div>
+          <div class="form-field">
+            <label for="cf-email">Email</label>
+            <input type="email" id="cf-email" name="email" placeholder="your@email.com" required>
+          </div>
+          <div class="form-field">
+            <label for="cf-message">Message</label>
+            <textarea id="cf-message" name="message" placeholder="What's on your mind?" required></textarea>
+          </div>
+          <button type="submit" class="form-submit">Send</button>
+        </form>
+      </section>
+
+    </div>
+  </div><!-- /page-about -->
+
+  <!-- Post modal -->
+  <div class="post-modal" aria-hidden="true">
+    <div class="post-modal__backdrop"></div>
+    <div class="post-modal__container" role="dialog" aria-modal="true" aria-label="Post">
+      <button class="post-modal__close" aria-label="Close">&times;</button>
+      <div class="post-modal__scroll">
+        <time class="post-modal__date"></time>
+        <h2 class="post-modal__title"></h2>
+        <div class="post-modal__body"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Image lightbox -->
+  <div class="img-lightbox" aria-hidden="true">
+    <div class="img-lightbox__backdrop"></div>
+    <div class="img-lightbox__container" role="dialog" aria-modal="true" aria-label="Image">
+      <button class="img-lightbox__close" aria-label="Close">&times;</button>
+      <div class="img-lightbox__layout img-lightbox__layout--left">
+        <div class="img-lightbox__caption-panel">
+          <p class="img-lightbox__caption"></p>
+        </div>
+        <div class="img-lightbox__image-panel">
+          <img class="img-lightbox__img" src="" alt="">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+
+      // ── Side panel ────────────────────────────────────────
+
+      var menuBtn  = document.querySelector('.menu-toggle');
+      var panel    = document.querySelector('.side-panel');
+      var backdrop = document.querySelector('.backdrop');
+
+      function openPanel() {
+        document.body.classList.add('panel-open');
+        menuBtn.setAttribute('aria-expanded', 'true');
+        panel.setAttribute('aria-hidden', 'false');
+      }
+
+      function closePanel() {
+        document.body.classList.remove('panel-open');
+        menuBtn.setAttribute('aria-expanded', 'false');
+        panel.setAttribute('aria-hidden', 'true');
+      }
+
+      menuBtn.addEventListener('click', function () {
+        document.body.classList.contains('panel-open') ? closePanel() : openPanel();
+      });
+
+      backdrop.addEventListener('click', closePanel);
+
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+          if (lightbox && lightbox.classList.contains('is-open')) {
+            closeLightbox();
+          } else if (modal && modal.classList.contains('is-open')) {
+            closeModal();
+          } else {
+            closePanel();
+          }
+        }
+      });
+
+      // ── Page switching ────────────────────────────────────
+
+      var navLinks = document.querySelectorAll('.side-panel__nav a[data-page]');
+
+      navLinks.forEach(function (link) {
+        link.addEventListener('click', function (e) {
+          e.preventDefault();
+          var target = link.getAttribute('data-page');
+
+          // Swap active page
+          document.querySelectorAll('.page').forEach(function (p) {
+            p.classList.toggle('is-active', p.id === 'page-' + target);
+          });
+
+          // Swap active nav link
+          navLinks.forEach(function (l) {
+            l.classList.toggle('is-active', l === link);
+          });
+
+          window.scrollTo(0, 0);
+          closePanel();
+        });
+      });
+
+      // ── Contact form (mailto fallback) ────────────────────
+
+      var form = document.getElementById('contact-form');
+      if (form) {
+        form.addEventListener('submit', function (e) {
+          e.preventDefault();
+          var name    = form.querySelector('[name="name"]').value.trim();
+          var email   = form.querySelector('[name="email"]').value.trim();
+          var message = form.querySelector('[name="message"]').value.trim();
+          var mailto  = 'mailto:you@example.com'
+            + '?subject=' + encodeURIComponent('Message from ' + name)
+            + '&body='    + encodeURIComponent(message + '\n\nReply to: ' + email);
+          window.location.href = mailto;
+        });
+      }
+
+      // ── Post modal ───────────────────────────────────────
+
+      var modal          = document.querySelector('.post-modal');
+      var modalBackdrop  = modal.querySelector('.post-modal__backdrop');
+      var modalContainer = modal.querySelector('.post-modal__container');
+      var modalClose     = modal.querySelector('.post-modal__close');
+      var modalScroll    = modal.querySelector('.post-modal__scroll');
+      var modalDate      = modal.querySelector('.post-modal__date');
+      var modalTitle     = modal.querySelector('.post-modal__title');
+      var modalBody      = modal.querySelector('.post-modal__body');
+      var timeline       = document.querySelector('.timeline');
+      var EASING         = 'cubic-bezier(0.4, 0, 0.2, 1)';
+      var lastCardRect   = null;
+
+      // ── In-memory comment store ───────────────────────────
+      var commentsStore = {};
+
+      function escapeHtml(str) {
+        return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      }
+
+      function getArticleId(article) {
+        var time = article.querySelector('.post__date');
+        return time ? time.getAttribute('datetime') : article.querySelector('.post__title').textContent;
+      }
+
+      function renderComments(container, comments) {
+        if (!comments.length) {
+          container.innerHTML = '<p class="conversation__empty">No comments yet. Be the first.</p>';
+          return;
+        }
+        container.innerHTML = comments.map(function (c) {
+          return '<div class="conversation__comment">'
+            + '<p class="conversation__comment-meta">' + escapeHtml(c.username) + ' &middot; ' + c.date + '</p>'
+            + '<p class="conversation__comment-text">' + escapeHtml(c.message) + '</p>'
+            + '</div>';
+        }).join('');
+      }
+
+      function buildConversation(article) {
+        if (article.hasAttribute('data-no-comments')) return;
+
+        var articleId = getArticleId(article);
+        if (!commentsStore[articleId]) commentsStore[articleId] = [];
+
+        var section = document.createElement('div');
+        section.className = 'conversation';
+        section.innerHTML =
+          '<button class="conversation__toggle" aria-expanded="false">Conversation</button>'
+          + '<div class="conversation__body">'
+          +   '<form class="conversation__form">'
+          +     '<div class="conversation__form-row">'
+          +       '<div class="form-field"><label>Username</label>'
+          +         '<input type="text" name="conv-username" placeholder="Your name" required></div>'
+          +       '<div class="form-field"><label>Email</label>'
+          +         '<input type="email" name="conv-email" placeholder="your@email.com" required></div>'
+          +     '</div>'
+          +     '<div class="form-field"><label>Message</label>'
+          +       '<textarea name="conv-message" placeholder="Join the conversation..." required></textarea></div>'
+          +     '<button type="submit" class="form-submit">Post</button>'
+          +   '</form>'
+          +   '<div class="conversation__comments"></div>'
+          + '</div>';
+
+        modalScroll.appendChild(section);
+
+        var toggle   = section.querySelector('.conversation__toggle');
+        var body     = section.querySelector('.conversation__body');
+        var comments = section.querySelector('.conversation__comments');
+
+        renderComments(comments, commentsStore[articleId]);
+
+        toggle.addEventListener('click', function () {
+          var open = body.classList.toggle('is-open');
+          toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        });
+
+        section.querySelector('.conversation__form').addEventListener('submit', function (e) {
+          e.preventDefault();
+          var username = this.querySelector('[name="conv-username"]').value.trim();
+          var message  = this.querySelector('[name="conv-message"]').value.trim();
+          commentsStore[articleId].push({
+            username: username,
+            message:  message,
+            date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+          });
+          renderComments(comments, commentsStore[articleId]);
+          this.reset();
+        });
+      }
+
+      function populateModal(article) {
+        var date      = article.querySelector('.post__date');
+        var title     = article.querySelector('.post__title');
+        var excerpt   = article.querySelector('.post__excerpt');
+        var bodyInner = article.querySelector('.post__body-inner');
+
+        modalDate.textContent = date ? date.textContent : '';
+        modalDate.setAttribute('datetime', date ? date.getAttribute('datetime') : '');
+        modalTitle.textContent = title ? title.textContent : '';
+
+        modalBody.innerHTML = (excerpt ? '<p>' + excerpt.innerHTML + '</p>' : '')
+                            + (bodyInner ? bodyInner.innerHTML : '');
+
+        // Remove any previous conversation section
+        var prev = modalScroll.querySelector('.conversation');
+        if (prev) prev.remove();
+
+        buildConversation(article);
+      }
+
+      function growModal(fromRect, toMargin) {
+        modalContainer.style.transition = 'none';
+        modalContainer.style.top    = fromRect.top    + 'px';
+        modalContainer.style.left   = fromRect.left   + 'px';
+        modalContainer.style.right  = (window.innerWidth  - fromRect.right)  + 'px';
+        modalContainer.style.bottom = (window.innerHeight - fromRect.bottom) + 'px';
+        modalContainer.style.overflow = 'hidden';
+        void modalContainer.offsetHeight;
+        modalContainer.style.transition =
+          'top 0.4s ' + EASING + ', left 0.4s ' + EASING +
+          ', right 0.4s ' + EASING + ', bottom 0.4s ' + EASING;
+        modalContainer.style.top    = toMargin;
+        modalContainer.style.left   = toMargin;
+        modalContainer.style.right  = toMargin;
+        modalContainer.style.bottom = toMargin;
+        modalContainer.addEventListener('transitionend', function handler(e) {
+          if (e.propertyName !== 'top') return;
+          modalContainer.removeEventListener('transitionend', handler);
+          modalContainer.style.overflowY = 'auto';
+          modalClose.focus();
+        });
+      }
+
+      function openModal(article) {
+        populateModal(article);
+        var card = article.querySelector('.post__card');
+        lastCardRect = card.getBoundingClientRect();
+        var margin = window.innerWidth <= 700 ? '0.75rem' : '2rem';
+        modal.classList.add('is-open');
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+        growModal(lastCardRect, margin);
+      }
+
+      function closeModal() {
+        modalContainer.style.overflowY = 'hidden';
+        // Shrink back to card position
+        if (lastCardRect) {
+          var r = lastCardRect;
+          modalContainer.style.transition =
+            'top 0.35s ' + EASING + ', left 0.35s ' + EASING +
+            ', right 0.35s ' + EASING + ', bottom 0.35s ' + EASING;
+          modalContainer.style.top    = r.top    + 'px';
+          modalContainer.style.left   = r.left   + 'px';
+          modalContainer.style.right  = (window.innerWidth  - r.right)  + 'px';
+          modalContainer.style.bottom = (window.innerHeight - r.bottom) + 'px';
+        }
+        modal.classList.remove('is-open');
+        modal.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+        modal.addEventListener('transitionend', function handler(e) {
+          if (e.propertyName !== 'opacity') return;
+          modal.removeEventListener('transitionend', handler);
+          modalContainer.style.cssText = '';
+        });
+      }
+
+      modalClose.addEventListener('click', closeModal);
+      modalBackdrop.addEventListener('click', closeModal);
+
+      // ── Image lightbox ────────────────────────────────────
+
+      var lightbox          = document.querySelector('.img-lightbox');
+      var lightboxBackdrop  = lightbox.querySelector('.img-lightbox__backdrop');
+      var lightboxClose     = lightbox.querySelector('.img-lightbox__close');
+      var lightboxContainer = lightbox.querySelector('.img-lightbox__container');
+      var lightboxLayout    = lightbox.querySelector('.img-lightbox__layout');
+      var lightboxImg       = lightbox.querySelector('.img-lightbox__img');
+      var lightboxCaption   = lightbox.querySelector('.img-lightbox__caption');
+      var lastFigureRect    = null;
+
+      function openLightbox(figure) {
+        var img     = figure.querySelector('img');
+        var caption = figure.getAttribute('data-caption') || '';
+        var side    = figure.classList.contains('post-img--left')  ? 'left'
+                    : figure.classList.contains('post-img--right') ? 'right'
+                    : 'center';
+
+        lightboxImg.src             = img.src;
+        lightboxImg.alt             = img.alt;
+        lightboxCaption.textContent = caption;
+        lightboxLayout.className    = 'img-lightbox__layout img-lightbox__layout--' + side;
+
+        lastFigureRect = figure.getBoundingClientRect();
+        var r = lastFigureRect;
+
+        lightboxContainer.style.transition = 'none';
+        lightboxContainer.style.top    = r.top    + 'px';
+        lightboxContainer.style.left   = r.left   + 'px';
+        lightboxContainer.style.right  = (window.innerWidth  - r.right)  + 'px';
+        lightboxContainer.style.bottom = (window.innerHeight - r.bottom) + 'px';
+        lightboxContainer.style.overflow = 'hidden';
+
+        lightbox.classList.add('is-open');
+        lightbox.setAttribute('aria-hidden', 'false');
+
+        void lightboxContainer.offsetHeight;
+
+        // Lightbox is inset further than the post modal so the modal border stays visible
+        var lbMargin = window.innerWidth <= 700 ? '1.5rem' : '4rem';
+        lightboxContainer.style.transition =
+          'top 0.4s ' + EASING + ', left 0.4s ' + EASING +
+          ', right 0.4s ' + EASING + ', bottom 0.4s ' + EASING;
+        lightboxContainer.style.top    = lbMargin;
+        lightboxContainer.style.left   = lbMargin;
+        lightboxContainer.style.right  = lbMargin;
+        lightboxContainer.style.bottom = lbMargin;
+
+        lightboxContainer.addEventListener('transitionend', function handler(e) {
+          if (e.propertyName !== 'top') return;
+          lightboxContainer.removeEventListener('transitionend', handler);
+          lightboxClose.focus();
+        });
+      }
+
+      function closeLightbox() {
+        // Shrink back to figure position
+        if (lastFigureRect) {
+          var r = lastFigureRect;
+          lightboxContainer.style.overflow = 'hidden';
+          lightboxContainer.style.transition =
+            'top 0.35s ' + EASING + ', left 0.35s ' + EASING +
+            ', right 0.35s ' + EASING + ', bottom 0.35s ' + EASING;
+          lightboxContainer.style.top    = r.top    + 'px';
+          lightboxContainer.style.left   = r.left   + 'px';
+          lightboxContainer.style.right  = (window.innerWidth  - r.right)  + 'px';
+          lightboxContainer.style.bottom = (window.innerHeight - r.bottom) + 'px';
+        }
+        lightbox.classList.remove('is-open');
+        lightbox.setAttribute('aria-hidden', 'true');
+        lightbox.addEventListener('transitionend', function handler(e) {
+          if (e.propertyName !== 'opacity') return;
+          lightbox.removeEventListener('transitionend', handler);
+          lightboxContainer.style.cssText = '';
+        });
+      }
+
+      lightboxClose.addEventListener('click', closeLightbox);
+      lightboxBackdrop.addEventListener('click', closeLightbox);
+
+      // Delegate image clicks within the open post modal
+      modal.addEventListener('click', function (e) {
+        var figure = e.target.closest('.post-img');
+        if (figure) openLightbox(figure);
+      });
+
+      // ── Dark mode toggle ──────────────────────────────────
+
+      var darkToggle = document.querySelector('.dark-toggle');
+      if (darkToggle) {
+        darkToggle.addEventListener('click', function () {
+          document.body.classList.toggle('dark-mode');
+          darkToggle.textContent = document.body.classList.contains('dark-mode') ? 'LIGHT' : 'DARK';
+        });
+      }
+
+      if (timeline) {
+        timeline.addEventListener('click', function (e) {
+          var card = e.target.closest('.post__card');
+          if (!card) return;
+          var article = card.closest('.post');
+          if (article) openModal(article);
+        });
+
+        timeline.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ') return;
+          var card = e.target.closest('.post__card');
+          if (!card) return;
+          e.preventDefault();
+          var article = card.closest('.post');
+          if (article) openModal(article);
+        });
+      }
+
+    })();
+  </script>
+
+</body>
+</html>
