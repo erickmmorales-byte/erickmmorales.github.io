@@ -837,6 +837,219 @@
         left: calc(18px - var(--dot-size) / 2);
       }
     }
+    
+    /* ── Admin login + editor ────────────────────────────── */
+    .admin-login-overlay,
+    .admin-panel {
+      position: fixed;
+      inset: 0;
+      z-index: 800;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+
+    .admin-login-overlay.is-open,
+    .admin-panel.is-open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .admin-login-overlay__shade,
+    .admin-panel__backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.45);
+    }
+
+    .admin-login,
+    .admin-panel__sheet {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: min(92vw, 980px);
+      background: var(--color-card-bg);
+      border: 1px solid var(--color-card-border);
+      border-radius: 6px;
+      z-index: 1;
+      max-height: 90vh;
+      overflow: auto;
+      padding: 1.35rem;
+    }
+
+    .admin-login {
+      width: min(92vw, 360px);
+    }
+
+    .admin-login h2,
+    .admin-panel h2,
+    .admin-panel h3 {
+      font-weight: normal;
+      margin-bottom: 0.8rem;
+    }
+
+    .admin-login__error {
+      color: #b00020;
+      font-size: 0.8rem;
+      margin-top: 0.35rem;
+      min-height: 1.2em;
+    }
+
+    .admin-panel__head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .admin-panel__close,
+    .admin-posts-list__item,
+    .admin-panel__new-post,
+    .form-submit {
+      cursor: pointer;
+    }
+
+    .admin-panel__close {
+      border: none;
+      background: none;
+      font-size: 1.5rem;
+      color: var(--color-muted);
+    }
+
+    .admin-panel__body {
+      display: block;
+    }
+
+    .admin-tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      border-bottom: 1px solid var(--color-line);
+      padding-bottom: 0.5rem;
+    }
+
+    .admin-tab {
+      font-family: var(--font-mono);
+      border: 1px solid var(--color-card-border);
+      background: var(--color-bg);
+      color: var(--color-text);
+      border-radius: 3px;
+      padding: 0.4rem 0.7rem;
+      font-size: 0.78rem;
+      cursor: pointer;
+    }
+
+    .admin-tab.is-active {
+      border-color: var(--color-dot);
+      background: var(--color-card-bg);
+    }
+
+    .admin-pane {
+      display: none;
+    }
+
+    .admin-pane.is-active {
+      display: block;
+    }
+
+    .admin-posts-layout {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      gap: 1rem;
+    }
+
+    .admin-posts-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      max-height: 60vh;
+      overflow: auto;
+    }
+
+    .admin-posts-list__item {
+      font-family: var(--font-mono);
+      border: 1px solid var(--color-card-border);
+      background: var(--color-bg);
+      color: var(--color-text);
+      border-radius: 3px;
+      text-align: left;
+      font-size: 0.73rem;
+      padding: 0.45rem 0.5rem;
+    }
+
+    .admin-posts-list__item.is-active {
+      border-color: var(--color-dot);
+    }
+
+    .admin-panel__status {
+      font-size: 0.75rem;
+      color: var(--color-muted);
+      min-height: 1.2em;
+      margin: 0.35rem 0 0.75rem;
+    }
+
+    .admin-editor {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .admin-editor .form-field textarea {
+      min-height: 160px;
+    }
+
+    .admin-editor__actions {
+      grid-column: span 2;
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-top: 0.25rem;
+    }
+
+    .admin-editor__toolbar {
+      grid-column: span 2;
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .admin-editor__hint {
+      grid-column: span 2;
+      font-size: 0.72rem;
+      color: var(--color-muted);
+      line-height: 1.55;
+    }
+
+    .admin-panel button,
+    .admin-panel .form-submit {
+      font-family: var(--font-mono);
+      border: 1px solid var(--color-card-border);
+      background: var(--color-card-bg);
+      color: var(--color-text);
+      border-radius: 3px;
+      padding: 0.5rem 0.8rem;
+      font-size: 0.8rem;
+    }
+
+    .admin-panel button:hover,
+    .admin-panel .form-submit:hover {
+      opacity: 0.8;
+    }
+
+    @media (max-width: 900px) {
+      .admin-posts-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .admin-editor {
+        grid-template-columns: 1fr;
+      }
+
+      .admin-editor__actions {
+        grid-column: span 1;
+      }
+    }
   </style>
 </head>
 <body>
@@ -1127,8 +1340,132 @@
     </div>
   </div>
 
+  <!-- Admin login -->
+  <div class="admin-login-overlay" aria-hidden="true">
+    <div class="admin-login-overlay__shade"></div>
+    <div class="admin-login" role="dialog" aria-modal="true" aria-label="Admin login">
+      <h2>Log in</h2>
+      <form class="admin-login__form">
+        <div class="form-field">
+          <label>User Name</label>
+          <input type="text" name="username" autocomplete="username" required>
+        </div>
+        <div class="form-field">
+          <label>Password</label>
+          <input type="password" name="password" autocomplete="current-password" required>
+        </div>
+        <button type="submit" class="form-submit">Enter</button>
+        <p class="admin-login__error" aria-live="polite"></p>
+      </form>
+    </div>
+  </div>
+
+  <!-- Admin editor -->
+  <div class="admin-panel" aria-hidden="true">
+    <div class="admin-panel__backdrop"></div>
+    <div class="admin-panel__sheet" role="dialog" aria-modal="true" aria-label="Editor">
+      <div class="admin-panel__head">
+        <h2>Site Editor</h2>
+        <button class="admin-panel__close" type="button" aria-label="Close editor">&times;</button>
+      </div>
+
+      <button class="admin-panel__new-post" type="button">New Post</button>
+      <p class="admin-panel__status" aria-live="polite"></p>
+
+      <div class="admin-panel__body">
+        <div class="admin-tabs" role="tablist" aria-label="Editor sections">
+          <button class="admin-tab is-active" type="button" role="tab" aria-selected="true" data-pane="posts">Posts</button>
+          <button class="admin-tab" type="button" role="tab" aria-selected="false" data-pane="about">About & Site</button>
+        </div>
+
+        <div class="admin-pane is-active" data-pane-content="posts">
+          <div class="admin-posts-layout">
+            <div class="admin-posts-list"></div>
+
+            <div>
+              <h3>Post editor</h3>
+              <form class="admin-editor__form admin-editor">
+                <input type="hidden" name="post-id">
+                <div class="form-field">
+                  <label>Title</label>
+                  <input type="text" name="title" required>
+                </div>
+                <div class="form-field">
+                  <label>Date label</label>
+                  <input type="text" name="date-text" placeholder="November 14, 2025" required>
+                </div>
+                <div class="form-field">
+                  <label>Date ISO</label>
+                  <input type="text" name="date-iso" placeholder="2025-11-14" required>
+                </div>
+                <div class="form-field">
+                  <label>Side</label>
+                  <select name="side">
+                    <option value="left">Left</option>
+                    <option value="right">Right</option>
+                  </select>
+                </div>
+                <div class="form-field">
+                  <label>Excerpt</label>
+                  <textarea name="excerpt"></textarea>
+                </div>
+                <div class="form-field">
+                  <label>Body</label>
+                  <textarea name="body" placeholder="Write text with paragraphs. Use toolbar to insert emojis and pictures."></textarea>
+                </div>
+
+                <div class="admin-editor__toolbar">
+                  <button type="button" class="admin-editor__emoji">Insert Emoji 😊</button>
+                  <button type="button" class="admin-editor__insert-image">Insert Picture Block</button>
+                </div>
+                <p class="admin-editor__hint">Tip: Picture blocks can be inserted anywhere in the body, repeated many times, and will render in that exact order/location with captions. Alignment options: left, right, full width.</p>
+
+                <div class="form-field">
+                  <label>Upload image (auto-insert picture block)</label>
+                  <input type="file" class="admin-editor__upload" accept="image/*">
+                </div>
+                <div class="form-field">
+                  <label><input type="checkbox" name="disable-comments"> Disable conversation for this post</label>
+                </div>
+                <div class="admin-editor__actions">
+                  <button type="submit" class="form-submit">Save Post</button>
+                  <button type="button" class="admin-editor__delete">Delete Post</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <div class="admin-pane" data-pane-content="about">
+          <h3>Site options</h3>
+          <div class="form-field">
+            <label><input type="checkbox" name="show-conversation" checked> Keep conversation tab enabled globally</label>
+          </div>
+
+          <h3 style="margin-top:1rem;">About / Header</h3>
+          <form class="admin-about__form">
+            <div class="form-field">
+              <label>Site subtitle</label>
+              <input type="text" name="site-subtitle">
+            </div>
+            <div class="form-field">
+              <label>About text</label>
+              <textarea name="about-bio"></textarea>
+            </div>
+            <button type="submit" class="form-submit">Save About</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
     (function () {
+
+      var ADMIN_USERNAME = 'erickmor';
+      var ADMIN_PASSWORD = '123usc';
+      var ADMIN_TRIGGER_CODE = '44447';
+      var STORAGE_KEY = 'journal-admin-state-v1';
 
       // ── Side panel ────────────────────────────────────────
 
@@ -1154,18 +1491,6 @@
 
       backdrop.addEventListener('click', closePanel);
 
-      document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape') {
-          if (lightbox && lightbox.classList.contains('is-open')) {
-            closeLightbox();
-          } else if (modal && modal.classList.contains('is-open')) {
-            closeModal();
-          } else {
-            closePanel();
-          }
-        }
-      });
-
       // ── Page switching ────────────────────────────────────
 
       var navLinks = document.querySelectorAll('.side-panel__nav a[data-page]');
@@ -1175,12 +1500,10 @@
           e.preventDefault();
           var target = link.getAttribute('data-page');
 
-          // Swap active page
           document.querySelectorAll('.page').forEach(function (p) {
             p.classList.toggle('is-active', p.id === 'page-' + target);
           });
 
-          // Swap active nav link
           navLinks.forEach(function (l) {
             l.classList.toggle('is-active', l === link);
           });
@@ -1201,7 +1524,7 @@
           var message = form.querySelector('[name="message"]').value.trim();
           var mailto  = 'mailto:erickmmorales@gmail.com'
             + '?subject=' + encodeURIComponent('Message from ' + name)
-            + '&body='    + encodeURIComponent(message + '\n\nReply to: ' + email);
+            + '&body='    + encodeURIComponent(message + '\\n\\nReply to: ' + email);
           window.location.href = mailto;
         });
       }
@@ -1219,17 +1542,127 @@
       var timeline       = document.querySelector('.timeline');
       var EASING         = 'cubic-bezier(0.4, 0, 0.2, 1)';
       var lastCardRect   = null;
+      var openArticleId  = null;
+      var lastTouchTime  = 0;
 
-      // ── In-memory comment store ───────────────────────────
       var commentsStore = {};
+
+      var initialState = {
+        posts: [],
+        showConversation: true,
+        aboutBioHTML: '',
+        siteSubtitle: ''
+      };
 
       function escapeHtml(str) {
         return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
       }
 
+      function uid() {
+        return 'p-' + Math.random().toString(36).slice(2, 10);
+      }
+
       function getArticleId(article) {
-        var time = article.querySelector('.post__date');
-        return time ? time.getAttribute('datetime') : article.querySelector('.post__title').textContent;
+        return article.getAttribute('data-post-id') || uid();
+      }
+
+      function parsePostsFromDOM() {
+        var posts = [];
+        timeline.querySelectorAll('.post').forEach(function (article, idx) {
+          var date = article.querySelector('.post__date');
+          var title = article.querySelector('.post__title');
+          var excerpt = article.querySelector('.post__excerpt');
+          var bodyInner = article.querySelector('.post__body-inner');
+          posts.push({
+            id: article.getAttribute('data-post-id') || uid(),
+            side: article.classList.contains('post--right') ? 'right' : 'left',
+            dateText: date ? date.textContent : '',
+            datetime: date ? date.getAttribute('datetime') : '',
+            title: title ? title.textContent : '',
+            excerptHTML: excerpt ? excerpt.innerHTML : '',
+            bodyHTML: bodyInner ? bodyInner.innerHTML : '',
+            noComments: article.hasAttribute('data-no-comments')
+          });
+        });
+        return posts;
+      }
+
+      function normalizeState(state) {
+        state.posts = Array.isArray(state.posts) ? state.posts : [];
+        state.posts = state.posts.map(function (p, idx) {
+          return {
+            id: p.id || uid(),
+            side: p.side === 'right' ? 'right' : 'left',
+            dateText: p.dateText || '',
+            datetime: p.datetime || '',
+            title: p.title || 'Untitled',
+            excerptHTML: p.excerptHTML || '',
+            bodyHTML: p.bodyHTML || '',
+            noComments: !!p.noComments
+          };
+        });
+        if (typeof state.showConversation !== 'boolean') state.showConversation = true;
+        if (typeof state.aboutBioHTML !== 'string') state.aboutBioHTML = '';
+        if (typeof state.siteSubtitle !== 'string') state.siteSubtitle = '';
+      }
+
+      function loadState() {
+        var loaded = null;
+        try {
+          loaded = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+        } catch (e) { loaded = null; }
+
+        if (loaded) {
+          normalizeState(loaded);
+          return loaded;
+        }
+
+        initialState.posts = parsePostsFromDOM();
+        var bio = document.querySelector('.about__bio');
+        initialState.aboutBioHTML = bio ? bio.innerHTML : '';
+        var subtitle = document.querySelector('.site-subtitle');
+        initialState.siteSubtitle = subtitle ? subtitle.textContent : '';
+        normalizeState(initialState);
+        return initialState;
+      }
+
+      var appState = loadState();
+
+      function saveState() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+      }
+
+      function renderPosts() {
+        timeline.querySelectorAll('.post').forEach(function (el) { el.remove(); });
+
+        appState.posts.forEach(function (post) {
+          var article = document.createElement('article');
+          article.className = 'post post--' + post.side;
+          article.setAttribute('aria-expanded', 'false');
+          article.setAttribute('data-post-id', post.id);
+          if (post.noComments) article.setAttribute('data-no-comments', '');
+
+          article.innerHTML =
+            '<div class="post__connector"></div>'
+            + '<div class="post__card" tabindex="0" role="button" aria-label="' + escapeHtml(post.title) + '">'
+            +   '<header class="post__header">'
+            +     '<time class="post__date" datetime="' + escapeHtml(post.datetime) + '">' + escapeHtml(post.dateText) + '</time>'
+            +     '<h2 class="post__title">' + escapeHtml(post.title) + '</h2>'
+            +   '</header>'
+            +   '<p class="post__excerpt">' + post.excerptHTML + '</p>'
+            +   '<div class="post__body" aria-hidden="true"><div class="post__body-inner">' + post.bodyHTML + '</div></div>'
+            +   '<button class="post__toggle" aria-label="Read more about ' + escapeHtml(post.title) + '">Read more</button>'
+            + '</div>';
+
+          timeline.appendChild(article);
+        });
+      }
+
+      function renderAbout() {
+        var aboutBio = document.querySelector('.about__bio');
+        if (aboutBio) aboutBio.innerHTML = appState.aboutBioHTML;
+        var subtitle = document.querySelector('.site-subtitle');
+        if (subtitle) subtitle.textContent = appState.siteSubtitle;
       }
 
       function renderComments(container, comments) {
@@ -1246,7 +1679,7 @@
       }
 
       function buildConversation(article) {
-        if (article.hasAttribute('data-no-comments')) return;
+        if (!appState.showConversation || article.hasAttribute('data-no-comments')) return;
 
         var articleId = getArticleId(article);
         if (!commentsStore[articleId]) commentsStore[articleId] = [];
@@ -1310,7 +1743,6 @@
         modalBody.innerHTML = (excerpt ? '<p>' + excerpt.innerHTML + '</p>' : '')
                             + (bodyInner ? bodyInner.innerHTML : '');
 
-        // Remove any previous conversation section
         var prev = modalScroll.querySelector('.conversation');
         if (prev) prev.remove();
 
@@ -1341,6 +1773,7 @@
       }
 
       function openModal(article) {
+        openArticleId = getArticleId(article);
         populateModal(article);
         var card = article.querySelector('.post__card');
         lastCardRect = card.getBoundingClientRect();
@@ -1353,7 +1786,6 @@
 
       function closeModal() {
         modalContainer.style.overflowY = 'hidden';
-        // Shrink back to card position
         if (lastCardRect) {
           var r = lastCardRect;
           modalContainer.style.transition =
@@ -1376,6 +1808,16 @@
 
       modalClose.addEventListener('click', closeModal);
       modalBackdrop.addEventListener('click', closeModal);
+
+      modalContainer.addEventListener('dblclick', function () {
+        if (modal.classList.contains('is-open')) closeModal();
+      });
+
+      modalContainer.addEventListener('touchend', function () {
+        var now = Date.now();
+        if (now - lastTouchTime < 320 && modal.classList.contains('is-open')) closeModal();
+        lastTouchTime = now;
+      }, { passive: true });
 
       // ── Image lightbox ────────────────────────────────────
 
@@ -1415,7 +1857,6 @@
 
         void lightboxContainer.offsetHeight;
 
-        // Lightbox is inset further than the post modal so the modal border stays visible
         var lbMargin = window.innerWidth <= 700 ? '1.5rem' : '4rem';
         lightboxContainer.style.transition =
           'top 0.4s ' + EASING + ', left 0.4s ' + EASING +
@@ -1433,7 +1874,6 @@
       }
 
       function closeLightbox() {
-        // Shrink back to figure position
         if (lastFigureRect) {
           var r = lastFigureRect;
           lightboxContainer.style.overflow = 'hidden';
@@ -1457,7 +1897,6 @@
       lightboxClose.addEventListener('click', closeLightbox);
       lightboxBackdrop.addEventListener('click', closeLightbox);
 
-      // Delegate image clicks within the open post modal
       modal.addEventListener('click', function (e) {
         var figure = e.target.closest('.post-img');
         if (figure) openLightbox(figure);
@@ -1490,6 +1929,326 @@
           if (article) openModal(article);
         });
       }
+
+        // ── Admin login + editor ──────────────────────────────
+
+      var loginOverlay = document.querySelector('.admin-login-overlay');
+      var loginForm = loginOverlay.querySelector('.admin-login__form');
+      var loginError = loginOverlay.querySelector('.admin-login__error');
+      var adminPanel = document.querySelector('.admin-panel');
+      var adminBackdrop = adminPanel.querySelector('.admin-panel__backdrop');
+      var adminClose = adminPanel.querySelector('.admin-panel__close');
+      var postsList = adminPanel.querySelector('.admin-posts-list');
+      var editorForm = adminPanel.querySelector('.admin-editor__form');
+      var aboutForm = adminPanel.querySelector('.admin-about__form');
+      var convToggleInput = adminPanel.querySelector('[name="show-conversation"]');
+      var newPostBtn = adminPanel.querySelector('.admin-panel__new-post');
+      var statusBox = adminPanel.querySelector('.admin-panel__status');
+      var tabButtons = adminPanel.querySelectorAll('.admin-tab');
+      var tabPanes = adminPanel.querySelectorAll('.admin-pane');
+      var emojiBtn = adminPanel.querySelector('.admin-editor__emoji');
+      var insertImageBtn = adminPanel.querySelector('.admin-editor__insert-image');
+      var selectedPostId = null;
+      var typedBuffer = '';
+
+      function setStatus(msg) {
+        statusBox.textContent = msg;
+      }
+
+      function showLogin() {
+        loginOverlay.classList.add('is-open');
+        loginOverlay.setAttribute('aria-hidden', 'false');
+        loginError.textContent = '';
+        loginForm.reset();
+        loginForm.querySelector('[name="username"]').focus();
+      }
+
+      function closeLogin() {
+        loginOverlay.classList.remove('is-open');
+        loginOverlay.setAttribute('aria-hidden', 'true');
+      }
+
+      function openAdminPanel() {
+        adminPanel.classList.add('is-open');
+        adminPanel.setAttribute('aria-hidden', 'false');
+        setActiveAdminPane('posts');
+        renderAdminPostsList();
+        convToggleInput.checked = appState.showConversation;
+        aboutForm.querySelector('[name="site-subtitle"]').value = appState.siteSubtitle;
+        aboutForm.querySelector('[name="about-bio"]').value = (appState.aboutBioHTML || '').replace(/<\/p>\s*<p>/g, '\n\n').replace(/<[^>]+>/g, '');
+      }
+
+      function closeAdminPanel() {
+        adminPanel.classList.remove('is-open');
+        adminPanel.setAttribute('aria-hidden', 'true');
+        selectedPostId = null;
+      }
+
+      function setActiveAdminPane(name) {
+        tabButtons.forEach(function (btn) {
+          var active = btn.getAttribute('data-pane') === name;
+          btn.classList.toggle('is-active', active);
+          btn.setAttribute('aria-selected', active ? 'true' : 'false');
+        });
+        tabPanes.forEach(function (pane) {
+          pane.classList.toggle('is-active', pane.getAttribute('data-pane-content') === name);
+        });
+      }
+
+      function renderAdminPostsList() {
+        postsList.innerHTML = '';
+        appState.posts.forEach(function (post, idx) {
+          var btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'admin-posts-list__item' + (post.id === selectedPostId ? ' is-active' : '');
+          btn.textContent = post.dateText + ' — ' + post.title;
+          btn.addEventListener('click', function () {
+            selectedPostId = post.id;
+            loadPostIntoEditor(post);
+            renderAdminPostsList();
+          });
+          postsList.appendChild(btn);
+        });
+      }
+
+      function loadPostIntoEditor(post) {
+        editorForm.querySelector('[name="post-id"]').value = post.id;
+        editorForm.querySelector('[name="title"]').value = post.title;
+        editorForm.querySelector('[name="date-text"]').value = post.dateText;
+        editorForm.querySelector('[name="date-iso"]').value = post.datetime;
+        editorForm.querySelector('[name="side"]').value = post.side;
+        editorForm.querySelector('[name="excerpt"]').value = post.excerptHTML.replace(/<[^>]+>/g, '');
+        var tmp = document.createElement('div');
+        tmp.innerHTML = post.bodyHTML;
+        var bodyParts = [];
+        Array.prototype.slice.call(tmp.childNodes).forEach(function (node) {
+          if (node.nodeType === 1 && node.matches('figure.post-img')) {
+            var img = node.querySelector('img');
+            var caption = node.getAttribute('data-caption') || '';
+            var align = node.classList.contains('post-img--left') ? 'left'
+                     : node.classList.contains('post-img--right') ? 'right'
+                     : 'full';
+            if (img) {
+              bodyParts.push('[image src="' + (img.getAttribute('src') || '') + '" caption="' + caption.replace(/"/g, '') + '" align="' + align + '"]');
+            }
+          } else {
+            var text = node.textContent || '';
+            if (text.trim()) bodyParts.push(text.trim());
+          }
+        });
+        editorForm.querySelector('[name="body"]').value = bodyParts.join('\n\n');
+        editorForm.querySelector('[name="disable-comments"]').checked = !!post.noComments;
+      }
+
+      function findPostById(id) {
+        return appState.posts.find(function (p) { return p.id === id; });
+      }
+
+      function escapeAttr(str) {
+        return (str || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      }
+
+      function formatInline(text) {
+        return escapeHtml(text)
+          .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+          .replace(/\*(.+?)\*/g, '<em>$1</em>');
+      }
+
+      function makeParagraphHtml(raw) {
+        var text = (raw || '').replace(/\r\n/g, '\n');
+        var imageToken = /\[image\s+src="([^"]+)"(?:\s+caption="([^"]*)")?(?:\s+align="(left|right|full)")?\s*\]/g;
+        var parts = [];
+        var last = 0;
+        var match;
+        while ((match = imageToken.exec(text)) !== null) {
+          if (match.index > last) parts.push({ type: 'text', value: text.slice(last, match.index) });
+          parts.push({
+            type: 'image',
+            src: match[1],
+            caption: match[2] || '',
+            align: match[3] || 'full'
+          });
+          last = imageToken.lastIndex;
+        }
+        if (last < text.length) parts.push({ type: 'text', value: text.slice(last) });
+
+        return parts.map(function (part) {
+          if (part.type === 'image') {
+            var cls = part.align === 'left' ? ' post-img--left' : part.align === 'right' ? ' post-img--right' : '';
+            return '<figure class="post-img' + cls + '" data-caption="' + escapeAttr(part.caption) + '">'
+              + '<img src="' + escapeAttr(part.src) + '" alt="' + escapeAttr(part.caption || 'Post image') + '">'
+              + '</figure>';
+          }
+
+          return part.value.split(/\n{2,}/).map(function (chunk) {
+            return chunk.trim();
+          }).filter(Boolean).map(function (chunk) {
+            return '<p>' + formatInline(chunk).replace(/\n/g, '<br>') + '</p>';
+          }).join('');
+        }).join('');
+      }
+
+      function insertAtCursor(field, snippet) {
+        var start = field.selectionStart || 0;
+        var end = field.selectionEnd || 0;
+        var val = field.value;
+        field.value = val.slice(0, start) + snippet + val.slice(end);
+        field.selectionStart = field.selectionEnd = start + snippet.length;
+        field.focus();
+      }
+
+      editorForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var id = editorForm.querySelector('[name="post-id"]').value || uid();
+        var existing = findPostById(id);
+        var payload = {
+          id: id,
+          title: editorForm.querySelector('[name="title"]').value.trim() || 'Untitled',
+          dateText: editorForm.querySelector('[name="date-text"]').value.trim(),
+          datetime: editorForm.querySelector('[name="date-iso"]').value.trim(),
+          side: editorForm.querySelector('[name="side"]').value === 'right' ? 'right' : 'left',
+          excerptHTML: escapeHtml(editorForm.querySelector('[name="excerpt"]').value.trim()),
+          bodyHTML: makeParagraphHtml(editorForm.querySelector('[name="body"]').value),
+          noComments: editorForm.querySelector('[name="disable-comments"]').checked
+        };
+
+        if (existing) {
+          Object.assign(existing, payload);
+          setStatus('Post updated.');
+        } else {
+          appState.posts.unshift(payload);
+          selectedPostId = id;
+          setStatus('Post created.');
+        }
+
+        renderPosts();
+        saveState();
+        renderAdminPostsList();
+      });
+
+      adminPanel.querySelector('.admin-editor__delete').addEventListener('click', function () {
+        var id = editorForm.querySelector('[name="post-id"]').value;
+        if (!id) return;
+        appState.posts = appState.posts.filter(function (p) { return p.id !== id; });
+        selectedPostId = null;
+        editorForm.reset();
+        renderPosts();
+        saveState();
+        renderAdminPostsList();
+        setStatus('Post deleted.');
+      });
+
+      newPostBtn.addEventListener('click', function () {
+        selectedPostId = null;
+        editorForm.reset();
+        editorForm.querySelector('[name="post-id"]').value = '';
+        editorForm.querySelector('[name="side"]').value = 'left';
+        renderAdminPostsList();
+        setActiveAdminPane('posts');
+        setStatus('Ready for a new post.');
+      });
+
+      tabButtons.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          setActiveAdminPane(btn.getAttribute('data-pane'));
+        });
+      });
+
+      emojiBtn.addEventListener('click', function () {
+        var bodyField = editorForm.querySelector('[name="body"]');
+        insertAtCursor(bodyField, '😊');
+      });
+
+      insertImageBtn.addEventListener('click', function () {
+        var src = window.prompt('Image URL (or paste data URL):');
+        if (!src) return;
+        var caption = window.prompt('Caption (optional):') || '';
+        var align = (window.prompt('Alignment: left, right, or full', 'full') || 'full').toLowerCase();
+        if (['left', 'right', 'full'].indexOf(align) === -1) align = 'full';
+        var snippet = '\n\n[image src="' + src + '" caption="' + caption.replace(/"/g, '') + '" align="' + align + '"]\n\n';
+        insertAtCursor(editorForm.querySelector('[name="body"]'), snippet);
+        setStatus('Picture block inserted.');
+      });
+
+      adminPanel.querySelector('.admin-editor__upload').addEventListener('change', function (e) {
+        var file = e.target.files && e.target.files[0];
+        if (!file) return;
+        var reader = new FileReader();
+        reader.onload = function () {
+          var bodyField = editorForm.querySelector('[name="body"]');
+          var snippet = '\n\n[image src="' + reader.result + '" caption="' + file.name.replace(/"/g, '') + '" align="full"]\n\n';
+          insertAtCursor(bodyField, snippet);
+          setStatus('Uploaded image added as picture block.');
+        };
+        reader.readAsDataURL(file);
+      });
+
+      convToggleInput.addEventListener('change', function () {
+        appState.showConversation = convToggleInput.checked;
+        saveState();
+        setStatus(convToggleInput.checked ? 'Conversation enabled.' : 'Conversation hidden.');
+      });
+
+      aboutForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        appState.siteSubtitle = aboutForm.querySelector('[name="site-subtitle"]').value.trim();
+        appState.aboutBioHTML = makeParagraphHtml(aboutForm.querySelector('[name="about-bio"]').value);
+        renderAbout();
+        saveState();
+        setStatus('About page and subtitle updated.');
+      });
+
+      loginForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var username = loginForm.querySelector('[name="username"]').value.trim();
+        var password = loginForm.querySelector('[name="password"]').value;
+        if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+          closeLogin();
+          openAdminPanel();
+        } else {
+          loginError.textContent = 'Incorrect username or password.';
+        }
+      });
+
+      adminClose.addEventListener('click', closeAdminPanel);
+      adminBackdrop.addEventListener('click', closeAdminPanel);
+
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+          if (loginOverlay.classList.contains('is-open')) {
+            closeLogin();
+            return;
+          }
+          if (adminPanel.classList.contains('is-open')) {
+            closeAdminPanel();
+            return;
+          }
+          if (lightbox && lightbox.classList.contains('is-open')) {
+            closeLightbox();
+          } else if (modal && modal.classList.contains('is-open')) {
+            closeModal();
+          } else {
+            closePanel();
+          }
+        }
+
+        var tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : '';
+        var isTypingTarget = tag === 'input' || tag === 'textarea' || tag === 'select' || e.target.isContentEditable;
+        if (isTypingTarget) return;
+
+        if (/^[0-9]$/.test(e.key)) {
+          typedBuffer = (typedBuffer + e.key).slice(-ADMIN_TRIGGER_CODE.length);
+          if (typedBuffer === ADMIN_TRIGGER_CODE) {
+            typedBuffer = '';
+            showLogin();
+          }
+        } else {
+          typedBuffer = '';
+        }
+      });
+
+      renderPosts();
+      renderAbout();
 
     })();
   </script>
