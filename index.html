@@ -2428,6 +2428,15 @@
 
       lightboxClose.addEventListener('click', closeLightbox);
       lightboxBackdrop.addEventListener('click', closeLightbox);
+      lightboxContainer.addEventListener('dblclick', closeLightbox);
+
+      // Double-tap to close on mobile
+      var lastTap = 0;
+      lightboxContainer.addEventListener('touchend', function (e) {
+        var now = Date.now();
+        if (now - lastTap < 300) { e.preventDefault(); closeLightbox(); }
+        lastTap = now;
+      });
 
       modal.addEventListener('click', function (e) {
         var figure = e.target.closest('.post-img');
