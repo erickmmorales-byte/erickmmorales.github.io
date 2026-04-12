@@ -28,6 +28,7 @@
     <ul class="side-panel__nav">
       <li><a href="{{ '/' | relative_url }}">Posts</a></li>
       <li><a href="{{ '/about/' | relative_url }}">About</a></li>
+      <li><a href="#" data-action="open-search" aria-label="Open search">Search</a></li>
     </ul>
   </nav>
 
@@ -62,6 +63,34 @@
         <div class="img-lightbox__image-panel">
           <img class="img-lightbox__img" src="" alt="">
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search overlay -->
+  <div class="search-overlay" id="search-overlay" aria-hidden="true" role="dialog" aria-label="Search posts">
+    <div class="search-overlay__backdrop"></div>
+    <div class="search-overlay__panel">
+      <div class="search-overlay__header">
+        <input type="search" id="search-overlay-input" class="search-overlay__input"
+               placeholder="Search posts..." aria-label="Search posts" autocomplete="off">
+        <button class="search-overlay__close" aria-label="Close search">&times;</button>
+      </div>
+      <div class="search-overlay__results" id="search-overlay-results">
+        {% for post in site.posts %}
+        <article class="search-result"
+                 data-title="{{ post.title | escape }}"
+                 data-excerpt="{{ post.excerpt | strip_html | escape }}">
+          <a href="{{ post.url | relative_url }}" class="search-result__card">
+            <time class="search-result__date" datetime="{{ post.date | date: '%Y-%m-%d' }}">
+              {{ post.date | date: "%B %-d, %Y" }}
+            </time>
+            <h2 class="search-result__title">{{ post.title }}</h2>
+            <p class="search-result__excerpt">{{ post.excerpt | strip_html }}</p>
+          </a>
+        </article>
+        {% endfor %}
+        <p class="search-no-results" id="search-no-results">No posts found.</p>
       </div>
     </div>
   </div>

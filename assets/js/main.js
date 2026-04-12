@@ -188,7 +188,8 @@
 
   document.addEventListener('keydown', function (e) {
     if (e.key !== 'Escape') return;
-    if (modal.classList.contains('is-open')) closeModal();
+    if (searchOverlay && searchOverlay.classList.contains('is-open')) closeSearch();
+    else if (modal.classList.contains('is-open')) closeModal();
     else closePanel();
   });
 
@@ -305,19 +306,66 @@
     if (figure) openLightbox(figure);
   });
 
-  // ── Search / filter ───────────────────────────────────────
+  // ── Search overlay ────────────────────────────────────────
 
-  var searchInput = document.getElementById('timeline-search');
-  if (searchInput && timeline) {
-    searchInput.addEventListener('input', function () {
-      var query = searchInput.value.toLowerCase().trim();
-      timeline.querySelectorAll('.post').forEach(function (article) {
-        var title   = (article.getAttribute('data-title')   || '').toLowerCase();
-        var excerpt = (article.getAttribute('data-excerpt') || '').toLowerCase();
-        var match = !query || title.includes(query) || excerpt.includes(query);
-        article.style.display = match ? '' : 'none';
+  var searchOverlay  = document.getElementById('search-overlay');
+  var searchOvInput  = document.getElementById('search-overlay-input');
+  var searchOvClose  = searchOverlay ? searchOverlay.querySelector('.search-overlay__close') : null;
+  var searchOvBack   = searchOverlay ? searchOverlay.querySelector('.search-overlay__backdrop') : null;
+  var searchNoResult = document.getElementById('search-no-results');
+  var searchResults  = searchOverlay ? searchOverlay.querySelectorAll('.search-result') : [];
+
+  function openSearch() {
+    if (!searchOverlay) return;
+    closePanel();
+    searchOverlay.classList.add('is-open');
+    searchOverlay.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    setTimeout(function () { if (searchOvInput) searchOvInput.focus(); }, 60);
+  }
+
+  function closeSearch() {
+    if (!searchOverlay) return;
+    searchOverlay.classList.remove('is-open');
+    searchOverlay.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  }
+
+  if (searchOvClose) searchOvClose.addEventListener('click', closeSearch);
+  if (searchOvBack)  searchOvBack.addEventListener('click', closeSearch);
+
+  // "Search" nav link — open overlay instead of navigating
+  document.querySelectorAll('[data-action="open-search"]').forEach(function (el) {
+    el.addEventListener('click', function (e) { e.preventDefault(); openSearch(); });
+  });
+
+  // Filter as user types
+  if (searchOvInput) {
+    searchOvInput.addEventListener('input', function () {
+      var q = searchOvInput.value.toLowerCase().trim();
+      var visible = 0;
+      searchResults.forEach(function (r) {
+        var title   = (r.getAttribute('data-title')   || '').toLowerCase();
+        var excerpt = (r.getAttribute('data-excerpt') || '').toLowerCase();
+        var match = !q || title.includes(q) || excerpt.includes(q);
+        r.style.display = match ? '' : 'none';
+        if (match) visible++;
       });
+      if (searchNoResult) {
+        searchNoResult.style.display = (q && visible === 0) ? 'block' : 'none';
+      }
     });
   }
+
+  // ── Auto open external links in a new tab ─────────────────
+
+  document.querySelectorAll('a[href^="http"]').forEach(function (link) {
+    try {
+      if (new URL(link.href).hostname !== window.location.hostname) {
+        link.setAttribute('target', '_blank');
+        link.setAttribute('rel', 'noopener noreferrer');
+      }
+    } catch (e) { /* skip malformed hrefs */ }
+  });
 
 }());
