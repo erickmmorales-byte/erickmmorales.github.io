@@ -14,8 +14,8 @@ permalink: /posts/:title/
 markdown: kramdown
 highlighter: rouge
 
-# Pagination — 21 posts per page, older posts on later pages
-paginate: 21
+# Pagination — 12 posts per page, older posts on later pages
+paginate: 12
 paginate_path: "/page:num/"
 
 plugins:
