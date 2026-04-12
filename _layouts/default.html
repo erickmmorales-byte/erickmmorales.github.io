@@ -79,6 +79,7 @@
       <div class="search-overlay__results" id="search-overlay-results">
         {% for post in site.posts %}
         <article class="search-result"
+                 data-post-url="{{ post.url | relative_url }}"
                  data-title="{{ post.title | escape }}"
                  data-excerpt="{{ post.excerpt | strip_html | escape }}">
           <a href="{{ post.url | relative_url }}" class="search-result__card">
@@ -88,6 +89,12 @@
             <h2 class="search-result__title">{{ post.title }}</h2>
             <p class="search-result__excerpt">{{ post.excerpt | strip_html }}</p>
           </a>
+          <!-- Hidden data for modal (read by populateModal()) -->
+          <time class="post__date" datetime="{{ post.date | date: '%Y-%m-%d' }}" aria-hidden="true" style="display:none">{{ post.date | date: "%B %-d, %Y" }}</time>
+          <h2 class="post__title" aria-hidden="true" style="display:none">{{ post.title }}</h2>
+          <div class="post__body" aria-hidden="true">
+            <div class="post__body-inner">{{ post.content }}</div>
+          </div>
         </article>
         {% endfor %}
         <p class="search-no-results" id="search-no-results">No posts found.</p>

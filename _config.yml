@@ -14,9 +14,14 @@ permalink: /posts/:title/
 markdown: kramdown
 highlighter: rouge
 
+# Pagination — 21 posts per page, older posts on later pages
+paginate: 21
+paginate_path: "/page:num/"
+
 plugins:
   - jekyll-feed
   - jekyll-seo-tag
+  - jekyll-paginate
 
 # Exclude non-site files from the build
 exclude:

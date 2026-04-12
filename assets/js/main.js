@@ -334,6 +334,37 @@
   if (searchOvClose) searchOvClose.addEventListener('click', closeSearch);
   if (searchOvBack)  searchOvBack.addEventListener('click', closeSearch);
 
+  // Clicking a result → close overlay, open modal with grow animation
+  if (searchOverlay) {
+    searchOverlay.addEventListener('click', function (e) {
+      var card = e.target.closest('.search-result__card');
+      if (!card) return;
+      e.preventDefault();
+      var article = card.closest('.search-result');
+      if (!article) return;
+
+      // Capture rect before closing (overlay still visible at this point)
+      var cardRect = card.getBoundingClientRect();
+
+      // Close overlay immediately (no fade — modal takes over the screen)
+      searchOverlay.classList.remove('is-open');
+      searchOverlay.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+
+      // Open modal growing from where the search card was
+      populateModal(article);
+      lastCardRect = cardRect;
+      var margin = window.innerWidth <= 700 ? '0.75rem' : '2rem';
+      modal.classList.add('is-open');
+      modal.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+      growModal(cardRect, margin);
+
+      var postUrl = article.getAttribute('data-post-url');
+      if (postUrl) history.pushState({ modal: true }, '', postUrl);
+    });
+  }
+
   // "Search" nav link — open overlay instead of navigating
   document.querySelectorAll('[data-action="open-search"]').forEach(function (el) {
     el.addEventListener('click', function (e) { e.preventDefault(); openSearch(); });

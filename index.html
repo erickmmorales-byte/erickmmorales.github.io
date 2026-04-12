@@ -10,7 +10,7 @@ layout: default
   <div class="timeline-wrap">
     <main class="timeline">
 
-      {% for post in site.posts %}
+      {% for post in paginator.posts %}
       <article class="post post--{% cycle 'left', 'right' %}"
                aria-expanded="false"
                data-post-url="{{ post.url | relative_url }}"
@@ -37,6 +37,32 @@ layout: default
 
     </main>
   </div>
+
+  {% if paginator.total_pages > 1 %}
+  <nav class="timeline-pagination" aria-label="Post pages">
+    {% if paginator.previous_page %}
+      <a href="{{ paginator.previous_page_path | relative_url }}" class="page-btn">&larr; Newer</a>
+    {% else %}
+      <button class="page-btn" disabled>&larr; Newer</button>
+    {% endif %}
+
+    {% for i in (1..paginator.total_pages) %}
+      {% if i == paginator.page %}
+        <button class="page-btn is-current" aria-current="page">{{ i }}</button>
+      {% elsif i == 1 %}
+        <a href="{{ '/' | relative_url }}" class="page-btn">{{ i }}</a>
+      {% else %}
+        <a href="{{ site.paginate_path | replace: ':num', i | relative_url }}" class="page-btn">{{ i }}</a>
+      {% endif %}
+    {% endfor %}
+
+    {% if paginator.next_page %}
+      <a href="{{ paginator.next_page_path | relative_url }}" class="page-btn">Older &rarr;</a>
+    {% else %}
+      <button class="page-btn" disabled>Older &rarr;</button>
+    {% endif %}
+  </nav>
+  {% endif %}
 
   <footer class="site-footer">
     <p>{{ site.footer_text }}</p>
