@@ -1286,10 +1286,39 @@
     /* About page image */
     .about__photo {
       width: 100%;
-      max-width: 340px;
       border-radius: 3px;
       display: block;
       margin-bottom: 1.25rem;
+    }
+
+    /* Photo positioning modifiers — add to the <img> class attribute */
+
+    /* Center: narrower photo, horizontally centered */
+    .about__photo--center {
+      max-width: 280px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* Float left: photo on left, bio text wraps around right */
+    .about__photo--left {
+      width: 45%;
+      float: left;
+      margin-right: 1.25rem;
+    }
+
+    /* Float right: photo on right, bio text wraps around left */
+    .about__photo--right {
+      width: 45%;
+      float: right;
+      margin-left: 1.25rem;
+    }
+
+    /* Clear floats after the bio section */
+    .about__bio::after {
+      content: '';
+      display: table;
+      clear: both;
     }
 
 /* ── Jekyll post page ────────────────────────────────────── */
