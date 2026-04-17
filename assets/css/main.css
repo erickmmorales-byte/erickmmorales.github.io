@@ -418,6 +418,7 @@
     .post-modal__body p {
       font-size: 1rem;
       line-height: 1.8;
+      text-align: justify;
       color: #333;
       margin-bottom: 1.25rem;
     }
@@ -625,6 +626,7 @@
       font-size: 0.95rem;
       color: #444;
       line-height: 1.75;
+      text-align: justify;
     }
 
     .about__bio p + p {
